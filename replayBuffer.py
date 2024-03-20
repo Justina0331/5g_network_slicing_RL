@@ -1,7 +1,11 @@
+import torch
 import numpy as np
 import random
-from collections import namedtuple, deque
+from collections import deque
 
+'''
+沒意外的話這個應該也沒什麼好改
+'''
 class ReplayBuffer:
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
@@ -10,8 +14,34 @@ class ReplayBuffer:
         self.buffer.append((state, action, reward, next_state, done))
 
     def sample(self, batch_size):
-        state, action, reward, next_state, done = zip(*random.sample(self.buffer, batch_size))
-        return np.array(state), np.array(action), np.array(reward, dtype=np.float32), np.array(next_state), np.array(done, dtype=np.uint8)
+        batch = random.sample(self.buffer, batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+        
+        # 由於Tensor可能具有不同的形状，需要處理轉換
+        states = torch.stack(states).numpy()
+        actions = torch.stack(actions).numpy()
+        rewards = np.array(rewards, dtype=np.float32)
+        next_states = torch.stack(next_states).numpy()
+        dones = np.array(dones, dtype=np.uint8)
+        
+        return states, actions, rewards, next_states, dones
+    
+    def sample_by_reward(self, n_samples):
+        # 根據獎勵排序經驗，選擇前n_samples個高獎勵的經驗
+        sorted_buffer = sorted(self.buffer, key=lambda x: x[2], reverse=True)
+        high_reward_experiences = sorted_buffer[:n_samples]
+
+        # 解包經驗並轉換為NumPy陣列
+        states, actions, rewards, next_states, dones = zip(*high_reward_experiences)
+        
+        # 由於Tensor可能具有不同的形狀，需要處理轉換
+        states = torch.stack(states).numpy()
+        actions = torch.stack(actions).numpy()
+        rewards = np.array(rewards, dtype=np.float32)
+        next_states = torch.stack(next_states).numpy()
+        dones = np.array(dones, dtype=np.uint8)
+        
+        return states, actions, rewards, next_states, dones
 
     def __len__(self):
         return len(self.buffer)
@@ -38,4 +68,4 @@ if len(replay_buffer) > batch_size:
     states, actions, rewards, next_states, dones = replay_buffer.sample(batch_size)
 '''
 
-print("replayBuffer_done")
+#print("replayBuffer_done")

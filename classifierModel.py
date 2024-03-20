@@ -1,7 +1,15 @@
 import pickle
 import pandas as pd
 
+'''
+拿學長的分類器來用，應該不用改
+'''
 class classifierModel:
+
+    # 將 csv 中的 slice 欄位轉換為整數
+    def slice_str_to_int(string):
+        slices_mapping = { 'slice_A': 0, 'slice_B': 1, 'slice_C': 2, 'slice_1': 0, 'slice_2': 1, 'slice_3': 2 }
+        return slices_mapping[string]
 
     def get_infos_from_csv(csv_path):
 
@@ -21,4 +29,4 @@ class classifierModel:
             model = pickle.load(f)
         return model
     
-print("classifierModel_done")
+#print("classifierModel_done")

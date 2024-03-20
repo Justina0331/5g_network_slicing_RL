@@ -21,17 +21,27 @@ class Actor(nn.Module):
             nn.Tanh()  # 使用Tanh激活函數來確保輸出值在[-1, 1]範圍內
         )
     
+    '''
+    forward及上面的network是用來選擇動作，完全沒有設計過，可以改
+    '''
     def forward(self, state):
-        """
-        根據給定的狀態進行前向傳播，生成動作。
-        
-        參數:
-        state (torch.Tensor): 當前智體的狀態。
-        
-        返回:
-        torch.Tensor: 生成的動作。
-        """
         return self.network(state)
+    
+    '''
+    更新actor神經網路，基本上也是沒有設計過，就只是能跑而已，也能改
+    '''
+    def update(self, states, actions, optimizer, critic):
+        # 將 states, actions, rewards, next_states 轉成 torch.Tensor
+        states = torch.FloatTensor(states)
+        actions = torch.FloatTensor(actions)
+
+        # 計算actor損失函數
+        actor_loss = -critic(states, actions).mean()
+
+        # 更新 Actor
+        optimizer.zero_grad()
+        actor_loss.backward()
+        optimizer.step()
 
 '''
 # 假設定義
@@ -45,4 +55,23 @@ actor = Actor(state_dim, action_dim)
 actor_optimizer = optim.Adam(actor.parameters(), lr=0.001)
 '''
 
-print("actor_done")
+
+'''
+# 將action輸出設置在0~1之間
+import torch.nn as nn
+
+class Actor(nn.Module):
+    def __init__(self, input_size, output_size):
+        super(Actor, self).__init__()
+        # 定义网络结构
+        self.network = nn.Sequential(
+            nn.Linear(input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, output_size),
+            nn.Sigmoid()  # 使用Sigmoid激活函数确保输出在0到1之间
+        )
+        
+    def forward(self, x):
+        return self.network(x
+
+'''
