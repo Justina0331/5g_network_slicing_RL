@@ -21,12 +21,11 @@ class classifierModel:
 
         feats = [x for x in df.columns if x not in filtered_col]
         x = df[feats]
-        #y = df['web_service']  #real_slice
-        return x
+        y = df['web_service']  #real_slice
+        return x, y
     
     def get_model(model_path):
         with open(model_path, "rb") as f:
             model = pickle.load(f)
         return model
     
-#print("classifierModel_done")

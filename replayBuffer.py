@@ -46,6 +46,43 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.buffer)
     
+
+class PrioritizedReplayBuffer:
+    def __init__(self, capacity, alpha=0.6):
+        self.capacity = capacity
+        self.alpha = alpha
+        self.buffer = []
+        self.priorities = []
+        self.position = 0
+
+    def push(self, state, action, reward, next_state, done, priority):
+        if len(self.buffer) < self.capacity:
+            self.buffer.append(None)
+            self.priorities.append(None)
+        # 直接將經驗以元組形式存儲
+        self.buffer[self.position] = (state, action, reward, next_state, done)
+        self.priorities[self.position] = priority ** self.alpha
+        self.position = (self.position + 1) % self.capacity
+
+    def sample(self, batch_size, beta=0.4):
+        scaled_priorities = np.array(self.priorities) / np.sum(self.priorities)
+        sample_indices = np.random.choice(np.arange(len(self.buffer)), size=batch_size, p=scaled_priorities)
+        
+        weights = (1.0 / (len(self.buffer) * scaled_priorities[sample_indices])) ** beta
+        weights /= weights.max()
+        
+        experiences = [self.buffer[idx] for idx in sample_indices]
+        states = np.vstack([e[0] for e in experiences])
+        actions = np.vstack([e[1] for e in experiences])
+        rewards = np.vstack([e[2] for e in experiences])
+        next_states = np.vstack([e[3] for e in experiences])
+        dones = np.vstack([e[4] for e in experiences])
+
+        return states, actions, rewards, next_states, dones, weights, sample_indices
+
+    def update_priorities(self, sample_indices, new_priorities):
+        for idx, new_priority in zip(sample_indices, new_priorities):
+            self.priorities[idx] = new_priority ** self.alpha
 '''
 # 實例化ReplayBuffer
 # 假設我們的緩衝區容量為10000
