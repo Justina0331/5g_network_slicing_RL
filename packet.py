@@ -2,6 +2,11 @@ from random import randint
 from classifierModel import classifierModel
 import numpy as np
 
+import random
+
+# 設置隨機種子
+random.seed(5)
+
 '''
 學長的封包，應該不用改東西
 '''
@@ -18,13 +23,12 @@ class Packet:
         packets = {}
         x = 0
         for category in np.unique(y):
-            arrive_time = randint(0, sys_time)
-            alive_time = randint(1, max_alive_time)
-
             category_indices = np.where(y == category)[0]  # 找到屬於該類別的索引
             indexs = np.random.choice(category_indices, amount, replace=False)  # replace=False 確保不會選擇重複的記錄
-
             for index in indexs:
+                arrive_time = randint(0, sys_time)
+                alive_time = randint(1, max_alive_time)
+                #print(category, arrive_time, alive_time)
                 x += 1
                 # 從 pandas 中取得特定的 col
                 packet_info = packet_infos.iloc[index : index+1]

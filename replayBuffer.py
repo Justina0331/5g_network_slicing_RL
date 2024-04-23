@@ -3,9 +3,13 @@ import numpy as np
 import random
 from collections import deque
 
-'''
-沒意外的話這個應該也沒什麼好改
-'''
+import random
+
+# 設置隨機種子
+random.seed(62)
+# 設置隨機種子
+torch.manual_seed(42)
+
 class ReplayBuffer:
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
@@ -45,7 +49,39 @@ class ReplayBuffer:
 
     def __len__(self):
         return len(self.buffer)
+
+'''
+class ReplayBuffer:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.buffer = []
     
+    def push(self, state, action, reward, next_state, done):
+        # 如果緩衝區已滿，則刪除獎勵最低的經驗
+        if len(self.buffer) >= self.capacity:
+            # 找到獎勵最低的經驗的索引
+            min_reward_index = min(range(len(self.buffer)), key=lambda i: self.buffer[i][2])
+            # 刪除獎勵最低的經驗
+            del self.buffer[min_reward_index]
+        # 添加新的經驗
+        self.buffer.append((state, action, reward, next_state, done))
+    
+    def sample(self, batch_size):
+        batch = random.sample(self.buffer, min(len(self.buffer), batch_size))
+        states, actions, rewards, next_states, dones = zip(*batch)
+        
+        states = torch.stack(states).numpy()
+        actions = torch.stack(actions).numpy()
+        rewards = np.array(rewards, dtype=np.float32)
+        next_states = torch.stack(next_states).numpy()
+        dones = np.array(dones, dtype=np.uint8)
+        
+        return states, actions, rewards, next_states, dones
+    
+    def __len__(self):
+        return len(self.buffer)
+'''
+
 
 class PrioritizedReplayBuffer:
     def __init__(self, capacity, alpha=0.6):
@@ -78,7 +114,7 @@ class PrioritizedReplayBuffer:
         next_states = np.vstack([e[3] for e in experiences])
         dones = np.vstack([e[4] for e in experiences])
 
-        return states, actions, rewards, next_states, dones, weights, sample_indices
+        return states, actions, rewards, next_states, dones#, weights, sample_indices
 
     def update_priorities(self, sample_indices, new_priorities):
         for idx, new_priority in zip(sample_indices, new_priorities):
